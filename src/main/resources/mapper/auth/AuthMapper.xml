@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 로그인, 로그인 이력 기록, 메뉴 (AuthService) -->
+<mapper namespace="com.testvue.auth.AuthMapper">
+
+	<select id="selectLoginAccount" resultType="com.testvue.auth.LoginAccount">
+		SELECT /* AuthMapper.selectLoginAccount 로그인 계정 */
+		       L.MB_ID
+		     , M.MB_NM
+		     , L.EMP_CD
+		     , E.EMP_NM
+		     , L.LOGIN_ID
+		     , L.USER_PWD
+		     , L.ACCT_LOCK_TYPE
+		  FROM TBSY_LOGIN L
+		  JOIN TBSY_MEMBER M
+		    ON M.MB_ID = L.MB_ID
+		   AND M.USE_YN = 'Y'
+		  LEFT OUTER JOIN TBIN_EMPMST E
+		    ON E.MB_ID = L.MB_ID
+		   AND E.EMP_CD = L.EMP_CD
+		 WHERE L.MB_ID = #{mbId}
+		   AND L.LOGIN_ID = #{loginId}
+	</select>
+
+	<insert id="insertLoginHist">
+		INSERT INTO TBSY_LOGIN_HIST /* AuthMapper.insertLoginHist 로그인 이력 */
+		       (MB_ID, EMP_CD, LOGIN_IP, LOGIN_DTM)
+		VALUES (#{mbId}, #{empCd}, #{loginIp}, NOW())
+	</insert>
+
+	<select id="selectMenuList" resultType="com.testvue.auth.Menu">
+		SELECT /* AuthMapper.selectMenuList 메뉴 (상위 메뉴 정렬 -> 하위 메뉴 정렬) */
+		       R.RESOURCE_ID                                         AS MENU_ID
+		     , R.PRNT_RESOURCE_ID                                    AS PRNT_MENU_ID
+		     , R.RESOURCE_NAME                                       AS MENU_NM
+		     , R.RESOURCE_URL                                        AS MENU_URL
+		     , CASE WHEN R.PRNT_RESOURCE_ID IS NULL THEN 0 ELSE 1 END AS MENU_LVL
+		  FROM TBSY_RESOURCE R
+		  LEFT OUTER JOIN TBSY_RESOURCE P
+		    ON P.MB_ID = R.MB_ID
+		   AND P.RESOURCE_ID = R.PRNT_RESOURCE_ID
+		 WHERE R.MB_ID = #{mbId}
+		   AND R.USE_YN = 'Y'
+		 ORDER BY IFNULL(P.SORT_NO, R.SORT_NO)
+		        , IFNULL(R.PRNT_RESOURCE_ID, R.RESOURCE_ID)
+		        , CASE WHEN R.PRNT_RESOURCE_ID IS NULL THEN 0 ELSE 1 END
+		        , R.SORT_NO
+	</select>
+
+</mapper>

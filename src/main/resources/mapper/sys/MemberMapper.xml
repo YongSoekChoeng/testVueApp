@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 회원사관리 (MemberService) -->
+<mapper namespace="com.testvue.sys.member.MemberMapper">
+
+	<select id="selectMemberList" resultType="com.testvue.sys.member.Member">
+		SELECT /* MemberMapper.selectMemberList 회원사 목록 */
+		       MB_ID
+		     , MB_NM
+		     , REPRESENT_NM
+		     , TELNO
+		     , CONT_FRYMD
+		     , CONT_TOYMD
+		     , USE_YN
+		     , MEMO
+		  FROM TBSY_MEMBER
+		 WHERE 1 = 1
+		<if test="mbNm != null and mbNm != ''">
+		   AND MB_NM LIKE CONCAT('%', #{mbNm}, '%')
+		</if>
+		<if test="useYn != null and useYn != ''">
+		   AND USE_YN = #{useYn}
+		</if>
+		 ORDER BY SORT_NO, MB_ID
+	</select>
+
+	<select id="countMember" resultType="int">
+		SELECT /* MemberMapper.countMember 회원사ID 중복 확인 */
+		       COUNT(*)
+		  FROM TBSY_MEMBER
+		 WHERE MB_ID = #{mbId}
+	</select>
+
+	<insert id="insertMember">
+		INSERT INTO TBSY_MEMBER /* MemberMapper.insertMember */
+		       (MB_ID, MB_NM, REPRESENT_NM, TELNO, CONT_FRYMD, CONT_TOYMD, USE_YN, MEMO, IN_EMP_CD, IN_DTM)
+		VALUES (#{m.mbId}, #{m.mbNm}, #{m.representNm}, #{m.telno}, #{m.contFrymd}, #{m.contToymd}
+		      , IFNULL(NULLIF(#{m.useYn}, ''), 'Y'), #{m.memo}, #{userId}, NOW())
+	</insert>
+
+	<update id="updateMember">
+		UPDATE TBSY_MEMBER /* MemberMapper.updateMember */
+		   SET MB_NM        = #{m.mbNm}
+		     , REPRESENT_NM = #{m.representNm}
+		     , TELNO        = #{m.telno}
+		     , CONT_FRYMD   = #{m.contFrymd}
+		     , CONT_TOYMD   = #{m.contToymd}
+		     , USE_YN       = IFNULL(NULLIF(#{m.useYn}, ''), 'Y')
+		     , MEMO         = #{m.memo}
+		     , UP_EMP_CD    = #{userId}
+		     , UP_DTM       = NOW()
+		 WHERE MB_ID = #{m.mbId}
+	</update>
+
+</mapper>

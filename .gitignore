@@ -1,0 +1,9 @@
+target/
+logs/
+bin/application.pid
+frontend/node_modules/
+frontend/dist/
+.idea/
+*.iml
+.vscode/
+*:Zone.Identifier

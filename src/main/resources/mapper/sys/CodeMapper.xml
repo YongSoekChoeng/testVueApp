@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 공통코드관리 (CodeService) -->
+<mapper namespace="com.testvue.sys.code.CodeMapper">
+
+	<select id="selectCodeGroupList" resultType="com.testvue.sys.code.CodeGroup">
+		SELECT /* CodeMapper.selectCodeGroupList 코드그룹 목록 */
+		       GRP_CMM_CD
+		     , GRP_CMM_CD_NM
+		     , GRP_CMM_CD_DESC
+		     , SYSTEM_GUBUN
+		     , SORT_NO
+		  FROM TBCM_COMMON_CODE_GROUP
+		 WHERE MB_ID = #{mbId}
+		<if test="keyword != null and keyword != ''">
+		   AND (GRP_CMM_CD LIKE CONCAT('%', #{keyword}, '%') OR GRP_CMM_CD_NM LIKE CONCAT('%', #{keyword}, '%'))
+		</if>
+		 ORDER BY SORT_NO, GRP_CMM_CD
+	</select>
+
+	<select id="countCodeGroup" resultType="int">
+		SELECT /* CodeMapper.countCodeGroup 그룹코드 중복 확인 */
+		       COUNT(*)
+		  FROM TBCM_COMMON_CODE_GROUP
+		 WHERE MB_ID = #{mbId}
+		   AND GRP_CMM_CD = #{grpCmmCd}
+	</select>
+
+	<insert id="insertCodeGroup">
+		INSERT INTO TBCM_COMMON_CODE_GROUP /* CodeMapper.insertCodeGroup */
+		       (MB_ID, GRP_CMM_CD, GRP_CMM_CD_NM, GRP_CMM_CD_DESC, SYSTEM_GUBUN, SORT_NO, IN_EMP_CD, IN_DTM)
+		VALUES (#{mbId}, #{g.grpCmmCd}, #{g.grpCmmCdNm}, #{g.grpCmmCdDesc}, #{g.systemGubun}
+		      , IFNULL(#{g.sortNo}, 0), #{userId}, NOW())
+	</insert>
+
+	<update id="updateCodeGroup">
+		UPDATE TBCM_COMMON_CODE_GROUP /* CodeMapper.updateCodeGroup */
+		   SET GRP_CMM_CD_NM   = #{g.grpCmmCdNm}
+		     , GRP_CMM_CD_DESC = #{g.grpCmmCdDesc}
+		     , SYSTEM_GUBUN    = #{g.systemGubun}
+		     , SORT_NO         = IFNULL(#{g.sortNo}, 0)
+		     , UP_EMP_CD       = #{userId}
+		     , UP_DTM          = NOW()
+		 WHERE MB_ID = #{mbId}
+		   AND GRP_CMM_CD = #{g.grpCmmCd}
+	</update>
+
+	<delete id="deleteCodeGroup">
+		DELETE FROM TBCM_COMMON_CODE_GROUP /* CodeMapper.deleteCodeGroup */
+		 WHERE MB_ID = #{mbId}
+		   AND GRP_CMM_CD = #{grpCmmCd}
+	</delete>
+
+	<select id="selectCodeList" resultType="com.testvue.sys.code.Code">
+		SELECT /* CodeMapper.selectCodeList 코드 목록 */
+		       GRP_CMM_CD
+		     , CD_VL
+		     , CD_VL_NM
+		     , USE_YN
+		     , SORT_NO
+		  FROM TBCM_COMMON_CODE
+		 WHERE MB_ID = #{mbId}
+		   AND GRP_CMM_CD = #{grpCmmCd}
+		<if test="useYn != null and useYn != ''">
+		   AND USE_YN = #{useYn}
+		</if>
+		 ORDER BY SORT_NO, CD_VL
+	</select>
+
+	<select id="countCode" resultType="int">
+		SELECT /* CodeMapper.countCode 코드값 중복 확인 */
+		       COUNT(*)
+		  FROM TBCM_COMMON_CODE
+		 WHERE MB_ID = #{mbId}
+		   AND GRP_CMM_CD = #{grpCmmCd}
+		   AND CD_VL = #{cdVl}
+	</select>
+
+	<insert id="insertCode">
+		INSERT INTO TBCM_COMMON_CODE /* CodeMapper.insertCode */
+		       (MB_ID, GRP_CMM_CD, CD_VL, CD_VL_NM, USE_YN, SORT_NO, IN_EMP_CD, IN_DTM)
+		VALUES (#{mbId}, #{c.grpCmmCd}, #{c.cdVl}, #{c.cdVlNm}, IFNULL(NULLIF(#{c.useYn}, ''), 'Y')
+		      , IFNULL(#{c.sortNo}, 0), #{userId}, NOW())
+	</insert>
+
+	<update id="updateCode">
+		UPDATE TBCM_COMMON_CODE /* CodeMapper.updateCode */
+		   SET CD_VL_NM  = #{c.cdVlNm}
+		     , USE_YN    = IFNULL(NULLIF(#{c.useYn}, ''), 'Y')
+		     , SORT_NO   = IFNULL(#{c.sortNo}, 0)
+		     , UP_EMP_CD = #{userId}
+		     , UP_DTM    = NOW()
+		 WHERE MB_ID = #{mbId}
+		   AND GRP_CMM_CD = #{c.grpCmmCd}
+		   AND CD_VL = #{c.cdVl}
+	</update>
+
+	<delete id="deleteCode">
+		DELETE FROM TBCM_COMMON_CODE /* CodeMapper.deleteCode */
+		 WHERE MB_ID = #{mbId}
+		   AND GRP_CMM_CD = #{grpCmmCd}
+		   AND CD_VL = #{cdVl}
+	</delete>
+
+	<delete id="deleteCodeByGroup">
+		DELETE FROM TBCM_COMMON_CODE /* CodeMapper.deleteCodeByGroup 그룹 삭제 때 아래 코드 전부 */
+		 WHERE MB_ID = #{mbId}
+		   AND GRP_CMM_CD = #{grpCmmCd}
+	</delete>
+
+</mapper>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 로그인이력 (LoginHistService) -->
+<mapper namespace="com.testvue.sys.loginhist.LoginHistMapper">
+
+	<select id="selectLoginHistList" resultType="com.testvue.sys.loginhist.LoginHist">
+		SELECT /* LoginHistMapper.selectLoginHistList 로그인 이력 (최근 500건) */
+		       DATE_FORMAT(H.LOGIN_DTM, '%Y-%m-%d %H:%i:%s') AS LOGIN_DTM
+		     , H.MB_ID
+		     , L.LOGIN_ID
+		     , E.EMP_NM
+		     , H.LOGIN_IP
+		  FROM TBSY_LOGIN_HIST H
+		  LEFT OUTER JOIN TBSY_LOGIN L
+		    ON L.MB_ID = H.MB_ID
+		   AND L.EMP_CD = H.EMP_CD
+		  LEFT OUTER JOIN TBIN_EMPMST E
+		    ON E.MB_ID = H.MB_ID
+		   AND E.EMP_CD = H.EMP_CD
+		 WHERE H.MB_ID = #{mbId}
+		<if test="fromYmd != null and fromYmd != ''">
+		   AND H.LOGIN_DTM &gt;= STR_TO_DATE(#{fromYmd}, '%Y%m%d')
+		</if>
+		<if test="toYmd != null and toYmd != ''">
+		   AND H.LOGIN_DTM &lt; DATE_ADD(STR_TO_DATE(#{toYmd}, '%Y%m%d'), INTERVAL 1 DAY)
+		</if>
+		<if test="loginId != null and loginId != ''">
+		   AND L.LOGIN_ID LIKE CONCAT('%', #{loginId}, '%')
+		</if>
+		 ORDER BY H.LOGIN_DTM DESC
+		 LIMIT 500
+	</select>
+
+</mapper>

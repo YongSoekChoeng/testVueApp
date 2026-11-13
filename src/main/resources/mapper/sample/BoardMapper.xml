@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- 샘플게시판 (BoardService) -->
+<mapper namespace="com.testvue.sample.board.BoardMapper">
+
+	<select id="selectBoardList" resultType="com.testvue.sample.board.Board">
+		SELECT /* BoardMapper.selectBoardList 게시글 목록 */
+		       SEQ
+		     , TITLE
+		     , WRITER_NM
+		     , DATE_FORMAT(IN_DTM, '%Y-%m-%d %H:%i') AS IN_DTM
+		  FROM TBTS_SAMPLE_BOARD
+		 WHERE MB_ID = #{mbId}
+		   AND USE_YN = 'Y'
+		<if test="title != null and title != ''">
+		   AND TITLE LIKE CONCAT('%', #{title}, '%')
+		</if>
+		 ORDER BY SEQ DESC
+	</select>
+
+	<select id="selectBoard" resultType="com.testvue.sample.board.Board">
+		SELECT /* BoardMapper.selectBoard 게시글 한 건 */
+		       SEQ
+		     , TITLE
+		     , CONTENT
+		     , WRITER_NM
+		     , DATE_FORMAT(IN_DTM, '%Y-%m-%d %H:%i') AS IN_DTM
+		  FROM TBTS_SAMPLE_BOARD
+		 WHERE MB_ID = #{mbId}
+		   AND SEQ = #{seq}
+		   AND USE_YN = 'Y'
+	</select>
+
+	<insert id="insertBoard" useGeneratedKeys="true" keyProperty="b.seq" keyColumn="SEQ">
+		INSERT INTO TBTS_SAMPLE_BOARD /* BoardMapper.insertBoard */
+		       (MB_ID, TITLE, CONTENT, WRITER_NM, USE_YN, IN_EMP_CD, IN_DTM)
+		VALUES (#{mbId}, #{b.title}, #{b.content}, #{b.writerNm}, 'Y', #{userId}, NOW())
+	</insert>
+
+	<update id="updateBoard">
+		UPDATE TBTS_SAMPLE_BOARD /* BoardMapper.updateBoard */
+		   SET TITLE     = #{b.title}
+		     , CONTENT   = #{b.content}
+		     , WRITER_NM = #{b.writerNm}
+		     , UP_EMP_CD = #{userId}
+		     , UP_DTM    = NOW()
+		 WHERE MB_ID = #{mbId}
+		   AND SEQ = #{b.seq}
+		   AND USE_YN = 'Y'
+	</update>
+
+	<update id="deleteBoard">
+		UPDATE TBTS_SAMPLE_BOARD /* BoardMapper.deleteBoard 삭제는 사용여부 N */
+		   SET USE_YN    = 'N'
+		     , UP_EMP_CD = #{userId}
+		     , UP_DTM    = NOW()
+		 WHERE MB_ID = #{mbId}
+		   AND SEQ = #{seq}
+		   AND USE_YN = 'Y'
+	</update>
+
+</mapper>
